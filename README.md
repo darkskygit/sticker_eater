@@ -8,6 +8,10 @@
 
 ## Usage
 
+- BotFather申请token并关闭bot的group privacy
+- 拉进群，设置为管理员
+- 运行程序
+
 直接运行:
 
 ```sh
