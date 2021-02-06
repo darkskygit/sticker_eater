@@ -4,11 +4,11 @@ use chrono::{Duration, TimeZone, Utc};
 use futures::StreamExt;
 use log::{error, info, Level};
 use std::sync::{Arc, RwLock};
-use std::thread::{sleep, spawn};
 use telegram_bot::{
     Api, CanGetChatMemberForChat, ChatId, DeleteMessage, GetMe, Message, MessageChat, MessageKind,
     UpdateKind, User,
 };
+use tokio::{spawn, time::delay_for};
 
 type ARWLock<T> = Arc<RwLock<T>>;
 
@@ -90,7 +90,7 @@ async fn eater(token: String) {
             info!("Eater thread exited.");
             break;
         }
-        sleep(std::time::Duration::from_secs(1));
+        delay_for(std::time::Duration::from_secs(1)).await;
     }
 }
 
@@ -98,12 +98,9 @@ async fn eater(token: String) {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     logger::init_logger(Level::Debug)?;
     let token = std::env::var("TELEGRAM_BOT_TOKEN").expect("TELEGRAM_BOT_TOKEN not set");
+
     let token_clone = token.clone();
-    let eater_handler = spawn(move || {
-        tokio::runtime::Runtime::new()
-            .unwrap()
-            .block_on(eater(token_clone))
-    });
+    let eater_handler = spawn(async { eater(token_clone).await });
 
     let api = Api::new(token);
     let me = api.send(GetMe).await?;
@@ -130,6 +127,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-    eater_handler.join().expect("Failed to join eater thread.");
+    eater_handler.await?;
     Ok(())
 }
