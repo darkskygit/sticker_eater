@@ -10,5 +10,5 @@ COPY --from=builder \
     /home/rust/src/target/x86_64-unknown-linux-musl/release/sticker_eater \
     /usr/local/bin/
 WORKDIR /sticker_eater
-ENV TELEGRAM_BOT_TOKEN
+ENV TELEGRAM_BOT_TOKEN=''
 ENTRYPOINT /usr/local/bin/sticker_eater
